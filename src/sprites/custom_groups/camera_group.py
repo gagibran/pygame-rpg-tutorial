@@ -1,6 +1,12 @@
 import pygame
 from custom_types.types import VisibleSprite
-from common.constants import MAX_CAMERA_ZOOM, SCREEN_WIDTH, SCREEN_HEIGHT, CAMERA_SPEED
+from common.constants import (
+    MAX_CAMERA_ZOOM,
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    CAMERA_SPEED,
+    ZOOM_SPEED,
+)
 from sprites.player import Player
 
 
@@ -22,13 +28,13 @@ class CameraGroup(pygame.sprite.Group):
             and keys[pygame.K_EQUALS]
             and self.zoom < MAX_CAMERA_ZOOM
         ):
-            self.zoom += 0.1
+            self.zoom += ZOOM_SPEED
         elif (
             (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT])
             and keys[pygame.K_MINUS]
             and self.zoom > 1
         ):
-            self.zoom -= 0.1
+            self.zoom -= ZOOM_SPEED
 
     def draw_zoom_surface(self):
         zoom_surface = pygame.Surface(self.screen.get_size())
