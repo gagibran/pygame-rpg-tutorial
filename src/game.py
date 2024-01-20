@@ -2,19 +2,17 @@
 
 import sys
 import pygame
-import common.constants
-import common.scene
+from common.constants import SCREEN_WIDTH, SCREEN_HEIGHT, GAME_TITLE, FPS
+from common.scene import Scene
 
 
 class Game:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode(
-            (common.constants.SCREEN_WIDTH, common.constants.SCREEN_HEIGHT)
-        )
-        pygame.display.set_caption(common.constants.GAME_TITLE)
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption(GAME_TITLE)
         self.clock = pygame.time.Clock()
-        self.scene = common.scene.Scene()
+        self.scene = Scene()
 
     def process_events(self):
         for event in pygame.event.get():
@@ -28,7 +26,7 @@ class Game:
             self.process_events()
             self.scene.render()
             pygame.display.update()
-            self.clock.tick(common.constants.STATIC_FPS)
+            self.clock.tick(FPS)
 
 
 if __name__ == '__main__':

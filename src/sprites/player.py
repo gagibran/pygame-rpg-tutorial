@@ -1,7 +1,7 @@
 import pygame
-import common.constants
-import common.enums
-import sprites.tile
+from common.constants import PLAYER_INITIAL_SPEED
+from common.enums import CollisionType
+from sprites.tile import Tile
 
 
 class Player(pygame.sprite.Sprite):
@@ -16,15 +16,15 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=topleft_position)
         self.rect = self.rect.inflate(0, -10)
         self.direction_vector = pygame.math.Vector2()
-        self.speed = common.constants.PLAYER_INITIAL_SPEED
+        self.speed = PLAYER_INITIAL_SPEED
         self.collidable_sprites_group = collidable_sprites_group
 
     def process_input(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LSHIFT]:
-            self.speed = common.constants.PLAYER_INITIAL_SPEED * 2
+            self.speed = PLAYER_INITIAL_SPEED * 2
         else:
-            self.speed = common.constants.PLAYER_INITIAL_SPEED
+            self.speed = PLAYER_INITIAL_SPEED
         if keys[pygame.K_d]:
             self.direction_vector.x = 1
         elif keys[pygame.K_a]:
@@ -42,35 +42,35 @@ class Player(pygame.sprite.Sprite):
         if self.direction_vector.magnitude() > 0:
             self.direction_vector = self.direction_vector.normalize()
         self.rect.x += self.direction_vector.x * self.speed
-        self.handle_collision(common.enums.CollisionType.HORIZONTAL)
+        self.handle_collision(CollisionType.HORIZONTAL)
         self.rect.y += self.direction_vector.y * self.speed
-        self.handle_collision(common.enums.CollisionType.VERTICAL)
+        self.handle_collision(CollisionType.VERTICAL)
 
-    def handle_collision(self, collision_type: common.enums.CollisionType):
-        collidable_sprite: sprites.tile.Tile
+    def handle_collision(self, collision_type: CollisionType):
+        collidable_sprite: Tile
         for collidable_sprite in self.collidable_sprites_group:
             if (
                 self.direction_vector.x > 0
                 and collidable_sprite.rect.colliderect(self.rect)
-                and collision_type == common.enums.CollisionType.HORIZONTAL
+                and collision_type == CollisionType.HORIZONTAL
             ):
                 self.rect.right = collidable_sprite.rect.left
             if (
                 self.direction_vector.x < 0
                 and collidable_sprite.rect.colliderect(self.rect)
-                and collision_type == common.enums.CollisionType.HORIZONTAL
+                and collision_type == CollisionType.HORIZONTAL
             ):
                 self.rect.left = collidable_sprite.rect.right
             if (
                 self.direction_vector.y > 0
                 and collidable_sprite.rect.colliderect(self.rect)
-                and collision_type == common.enums.CollisionType.VERTICAL
+                and collision_type == CollisionType.VERTICAL
             ):
                 self.rect.bottom = collidable_sprite.rect.top
             if (
                 self.direction_vector.y < 0
                 and collidable_sprite.rect.colliderect(self.rect)
-                and collision_type == common.enums.CollisionType.VERTICAL
+                and collision_type == CollisionType.VERTICAL
             ):
                 self.rect.top = collidable_sprite.rect.bottom
 

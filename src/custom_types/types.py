@@ -1,4 +1,4 @@
-import sprites.tile
-import sprites.player
+from sprites.tile import Tile
+from sprites.player import Player
 
-VisibleSprite = sprites.tile.Tile | sprites.player.Player
+VisibleSprite = Tile | Player
