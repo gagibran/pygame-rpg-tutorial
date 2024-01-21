@@ -1,9 +1,9 @@
 import pygame
-from common.constants import (
+from common.settings import (
     PLAYER_INITIAL_CENTER_POSITION,
     PLAYER_INITIAL_SPEED,
 )
-from common.enums import CollisionType
+from enums.collision_direction import CollisionDirection
 from sprites.tile import Tile
 
 
@@ -16,7 +16,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__(groups)
         self.image = pygame.image.load('src/assets/test/player.png').convert_alpha()
         self.rect = self.image.get_rect(center=PLAYER_INITIAL_CENTER_POSITION)
-        self.rect = self.rect.inflate(0, -10)
+        self.rect = self.rect.inflate(0, -40)
         self.direction_vector = pygame.math.Vector2()
         self.speed = PLAYER_INITIAL_SPEED
         self.collidable_sprites_group = collidable_sprites_group
@@ -44,35 +44,35 @@ class Player(pygame.sprite.Sprite):
         if self.direction_vector.magnitude() > 0:
             self.direction_vector = self.direction_vector.normalize()
         self.rect.x += self.direction_vector.x * self.speed
-        self.handle_collision(CollisionType.HORIZONTAL)
+        self.handle_collision(CollisionDirection.HORIZONTAL)
         self.rect.y += self.direction_vector.y * self.speed
-        self.handle_collision(CollisionType.VERTICAL)
+        self.handle_collision(CollisionDirection.VERTICAL)
 
-    def handle_collision(self, collision_type: CollisionType):
+    def handle_collision(self, collision_direction: CollisionDirection):
         collidable_sprite: Tile
         for collidable_sprite in self.collidable_sprites_group:
             if (
                 self.direction_vector.x > 0
                 and collidable_sprite.rect.colliderect(self.rect)
-                and collision_type == CollisionType.HORIZONTAL
+                and collision_direction == CollisionDirection.HORIZONTAL
             ):
                 self.rect.right = collidable_sprite.rect.left
             if (
                 self.direction_vector.x < 0
                 and collidable_sprite.rect.colliderect(self.rect)
-                and collision_type == CollisionType.HORIZONTAL
+                and collision_direction == CollisionDirection.HORIZONTAL
             ):
                 self.rect.left = collidable_sprite.rect.right
             if (
                 self.direction_vector.y > 0
                 and collidable_sprite.rect.colliderect(self.rect)
-                and collision_type == CollisionType.VERTICAL
+                and collision_direction == CollisionDirection.VERTICAL
             ):
                 self.rect.bottom = collidable_sprite.rect.top
             if (
                 self.direction_vector.y < 0
                 and collidable_sprite.rect.colliderect(self.rect)
-                and collision_type == CollisionType.VERTICAL
+                and collision_direction == CollisionDirection.VERTICAL
             ):
                 self.rect.top = collidable_sprite.rect.bottom
 

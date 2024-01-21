@@ -2,8 +2,8 @@
 
 import sys
 import pygame
-from common.constants import SCREEN_SIZE, GAME_TITLE, FPS
-from common.scene import Scene
+from common.settings import SCREEN_SIZE, GAME_TITLE, FPS
+from common.world_map import WorldMap
 
 
 class Game:
@@ -12,7 +12,7 @@ class Game:
         self.screen = pygame.display.set_mode(SCREEN_SIZE)
         pygame.display.set_caption(GAME_TITLE)
         self.clock = pygame.time.Clock()
-        self.scene = Scene()
+        self.world_map = WorldMap()
 
     def process_events(self):
         for event in pygame.event.get():
@@ -22,9 +22,9 @@ class Game:
 
     def run(self):
         while True:
-            self.screen.fill('black')
+            self.screen.fill('#71ddee')
             self.process_events()
-            self.scene.render()
+            self.world_map.render()
             pygame.display.update()
             self.clock.tick(FPS)
 

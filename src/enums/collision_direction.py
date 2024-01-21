@@ -1,6 +1,6 @@
 import enum
 
 
-class CollisionType(enum.Enum):
+class CollisionDirection(enum.Enum):
     VERTICAL = 1
     HORIZONTAL = 2

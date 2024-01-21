@@ -1,6 +1,6 @@
 import pygame
 from custom_types.types import VisibleSprite
-from common.constants import (
+from common.settings import (
     CAMERA_INITIAL_CENTER_POSITION,
     MAX_CAMERA_ZOOM,
     MIN_CAMERA_ZOOM,
@@ -8,20 +8,15 @@ from common.constants import (
     CAMERA_SPEED,
     ZOOM_SPEED,
 )
-from sprites.player import Player
 
 
 class CameraGroup(pygame.sprite.Group):
-    def __init__(self):
+    def __init__(self, ground_surface: pygame.Surface, ground_rect: pygame.Rect):
         super().__init__()
-        self.half_screen_width = SCREEN_SIZE[0] // 2
-        self.half_screen_height = SCREEN_SIZE[1] // 2
-        self.ground_surface = pygame.image.load(
-            'src/assets/world_map/ground.png'
-        ).convert()
-        self.ground_rect = self.ground_surface.get_rect(
-            center=CAMERA_INITIAL_CENTER_POSITION
-        )
+        self.half_screen_width = SCREEN_SIZE[0] / 2
+        self.half_screen_height = SCREEN_SIZE[1] / 2
+        self.ground_surface = ground_surface
+        self.ground_rect = ground_rect
         self.screen = pygame.display.get_surface()
         self.screen_to_player_offset = [0, 0]
         self.zoom = 1
@@ -37,14 +32,16 @@ class CameraGroup(pygame.sprite.Group):
         zoom_surface = pygame.Surface(self.zoom_surface_size, pygame.SRCALPHA)
         return zoom_surface
 
-    def calculate_screen_to_player_offset(self, player: Player):
+    def calculate_screen_to_player_offset(
+        self, player_center_position: tuple[int, int]
+    ):
         self.screen_to_player_offset[0] += (
-            player.rect.centerx
+            player_center_position[0]
             - self.half_screen_width
             - self.screen_to_player_offset[0]
         ) * CAMERA_SPEED
         self.screen_to_player_offset[1] += (
-            player.rect.centery
+            player_center_position[1]
             - self.half_screen_height
             - self.screen_to_player_offset[1]
         ) * CAMERA_SPEED
@@ -54,8 +51,8 @@ class CameraGroup(pygame.sprite.Group):
             self.screen_to_player_offset[0], self.screen_to_player_offset[1]
         )
         zoom_to_screen_offset_vector = pygame.math.Vector2(
-            (self.zoom_surface_size[0] - SCREEN_SIZE[0]) // 2,
-            (self.zoom_surface_size[1] - SCREEN_SIZE[1]) // 2,
+            (self.zoom_surface_size[0] - SCREEN_SIZE[0]) / 2,
+            (self.zoom_surface_size[1] - SCREEN_SIZE[1]) / 2,
         )
         camera_movement_offset_vector = (
             screen_to_player_offset_vector - zoom_to_screen_offset_vector
@@ -101,9 +98,9 @@ class CameraGroup(pygame.sprite.Group):
         )
         self.screen.blit(zoom_surface, zoom_rect)
 
-    def draw_camera(self, player: Player):
+    def draw_camera(self, player_center_position: tuple[int, int]):
         zoom_surface = self.draw_zoom_surface()
-        self.calculate_screen_to_player_offset(player)
+        self.calculate_screen_to_player_offset(player_center_position)
         self.draw_ground_and_sprites_onto_zoom_surface(zoom_surface)
         self.handle_zoom_keyboard_input()
         self.apply_zoom(zoom_surface)
