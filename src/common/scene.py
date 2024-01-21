@@ -1,5 +1,5 @@
 import pygame
-from common.constants import WORLD_MAP, TILE_HORIZONTAL_SIZE, TILE_VERTICAL_SIZE
+from common.constants import TILE_SIZE
 from sprites.tile import Tile
 from sprites.player import Player
 from sprites.custom_groups.camera_group import CameraGroup
@@ -30,7 +30,6 @@ class Scene:
         #                 self.collidable_sprites_group,
         #             )
         self.player = Player(
-            (2000, 1430),
             [self.visible_sprites_group],
             self.collidable_sprites_group,
         )

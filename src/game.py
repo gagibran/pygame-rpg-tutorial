@@ -2,14 +2,14 @@
 
 import sys
 import pygame
-from common.constants import SCREEN_WIDTH, SCREEN_HEIGHT, GAME_TITLE, FPS
+from common.constants import SCREEN_SIZE, GAME_TITLE, FPS
 from common.scene import Scene
 
 
 class Game:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.screen = pygame.display.set_mode(SCREEN_SIZE)
         pygame.display.set_caption(GAME_TITLE)
         self.clock = pygame.time.Clock()
         self.scene = Scene()

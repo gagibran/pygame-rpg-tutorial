@@ -1,5 +1,8 @@
 import pygame
-from common.constants import PLAYER_INITIAL_SPEED
+from common.constants import (
+    PLAYER_INITIAL_CENTER_POSITION,
+    PLAYER_INITIAL_SPEED,
+)
 from common.enums import CollisionType
 from sprites.tile import Tile
 
@@ -7,13 +10,12 @@ from sprites.tile import Tile
 class Player(pygame.sprite.Sprite):
     def __init__(
         self,
-        topleft_position: tuple[int, int],
         groups: list[pygame.sprite.Group],
         collidable_sprites_group: pygame.sprite.Group,
     ):
         super().__init__(groups)
         self.image = pygame.image.load('src/assets/test/player.png').convert_alpha()
-        self.rect = self.image.get_rect(topleft=topleft_position)
+        self.rect = self.image.get_rect(center=PLAYER_INITIAL_CENTER_POSITION)
         self.rect = self.rect.inflate(0, -10)
         self.direction_vector = pygame.math.Vector2()
         self.speed = PLAYER_INITIAL_SPEED
