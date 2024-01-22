@@ -1,7 +1,6 @@
 import pygame
 from custom_types.types import VisibleSprite
 from common.settings import (
-    CAMERA_INITIAL_CENTER_POSITION,
     MAX_CAMERA_ZOOM,
     MIN_CAMERA_ZOOM,
     SCREEN_SIZE,

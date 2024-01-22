@@ -2,6 +2,6 @@ import enum
 
 
 class MapLayer(enum.Enum):
-    BORDER_DELIMITER = 1
+    BORDER_DELIMITERS = 1
     GRASS = 2
-    OBJECT = 3
+    OBJECTS = 3

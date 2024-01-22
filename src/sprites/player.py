@@ -2,8 +2,10 @@ import pygame
 from common.settings import (
     PLAYER_INITIAL_CENTER_POSITION,
     PLAYER_INITIAL_SPEED,
+    TILE_SIZE,
 )
 from enums.collision_direction import CollisionDirection
+from enums.sprite_type import SpriteType
 from sprites.tile import Tile
 
 
@@ -16,7 +18,6 @@ class Player(pygame.sprite.Sprite):
         super().__init__(groups)
         self.image = pygame.image.load('src/assets/test/player.png').convert_alpha()
         self.rect = self.image.get_rect(center=PLAYER_INITIAL_CENTER_POSITION)
-        self.rect = self.rect.inflate(0, -40)
         self.direction_vector = pygame.math.Vector2()
         self.speed = PLAYER_INITIAL_SPEED
         self.collidable_sprites_group = collidable_sprites_group
@@ -48,6 +49,14 @@ class Player(pygame.sprite.Sprite):
         self.rect.y += self.direction_vector.y * self.speed
         self.handle_collision(CollisionDirection.VERTICAL)
 
+    def calculate_player_hitbox_size(self, collidable_sprite: Tile):
+        if collidable_sprite.sprite_type == SpriteType.INVISIBLE:
+            self.rect.height = TILE_SIZE[1]
+        elif collidable_sprite.rect.height > TILE_SIZE[1]:
+            self.rect.height = TILE_SIZE[1] / 2.5
+        else:
+            self.rect.height = TILE_SIZE[1] - 10
+
     def handle_collision(self, collision_direction: CollisionDirection):
         collidable_sprite: Tile
         for collidable_sprite in self.collidable_sprites_group:
@@ -75,6 +84,7 @@ class Player(pygame.sprite.Sprite):
                 and collision_direction == CollisionDirection.VERTICAL
             ):
                 self.rect.top = collidable_sprite.rect.bottom
+            self.calculate_player_hitbox_size(collidable_sprite)
 
     def update(self):
         self.process_input()

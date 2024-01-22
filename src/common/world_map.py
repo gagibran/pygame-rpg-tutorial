@@ -31,11 +31,11 @@ class WorldMap:
             row_index * TILE_SIZE[1] + self.ground_rect.topleft[1],
         )
         match layer_type:
-            case MapLayer.BORDER_DELIMITER:
+            case MapLayer.BORDER_DELIMITERS:
                 self.add_border_delimiters(tile_topleft_position)
             case MapLayer.GRASS:
                 self.add_grass(tile_topleft_position)
-            case MapLayer.OBJECT:
+            case MapLayer.OBJECTS:
                 self.add_objects(tile, tile_topleft_position)
 
     def process_layer(self, layer: list[list[str]], layer_type: MapLayer):
@@ -76,11 +76,11 @@ class WorldMap:
 
     def create_world_map(self):
         map_layers = {
-            MapLayer.BORDER_DELIMITER: get_map_layer_from_csv(
+            MapLayer.BORDER_DELIMITERS: get_map_layer_from_csv(
                 'src/data/map/border_delimiter.csv'
             ),
             MapLayer.GRASS: get_map_layer_from_csv('src/data/map/grass.csv'),
-            MapLayer.OBJECT: get_map_layer_from_csv('src/data/map/object.csv'),
+            MapLayer.OBJECTS: get_map_layer_from_csv('src/data/map/object.csv'),
         }
         for layer_type, layer in map_layers.items():
             self.process_layer(layer, layer_type)
