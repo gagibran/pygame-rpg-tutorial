@@ -21,7 +21,7 @@ class WorldMap:
         self.visible_sprites_group = CameraGroup(self.ground_surface, self.ground_rect)
         self.collidable_sprites_group = pygame.sprite.Group()
         self.player: Player = None
-        self.create_world_map()
+        self.add_sprites_to_world_map()
 
     def add_layer_by_type(
         self, tile: str, layer_type: MapLayer, tile_index: int, row_index: int
@@ -74,7 +74,7 @@ class WorldMap:
             surface=grass_surface,
         )
 
-    def create_world_map(self):
+    def add_sprites_to_world_map(self):
         map_layers = {
             MapLayer.BORDER_DELIMITERS: get_map_layer_from_csv(
                 'src/data/map/border_delimiter.csv'
