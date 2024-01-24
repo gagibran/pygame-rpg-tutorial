@@ -7,6 +7,7 @@ from common.settings import (
     PLAYER_WALK_SPEED,
     TILE_SIZE,
 )
+from common.utils import get_alpha_converted_surface_from_image
 from enums.collision_direction import CollisionDirection
 from enums.player_direction import PlayerDirection
 from enums.sprite_type import SpriteType
@@ -21,9 +22,9 @@ class Player(pygame.sprite.Sprite):
         collidable_sprites_group: pygame.sprite.Group,
     ):
         super().__init__(groups)
-        self.image = pygame.image.load(
-            'src/assets/player/down_idle/down_idle.png'
-        ).convert_alpha()
+        self.image = get_alpha_converted_surface_from_image(
+            'player/down_idle/down_idle.png'
+        )
         self.rect = self.image.get_rect(center=PLAYER_INITIAL_CENTER_POSITION)
         self.direction_vector = pygame.math.Vector2()
         self.speed = PLAYER_WALK_SPEED

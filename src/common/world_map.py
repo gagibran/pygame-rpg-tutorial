@@ -1,7 +1,7 @@
 import random
 import pygame
 from common.settings import CAMERA_INITIAL_CENTER_POSITION, TILE_SIZE
-from common.tools import get_map_layer_from_csv
+from common.utils import get_map_layer_from_csv, get_alpha_converted_surface_from_image
 from enums.map_layers import MapLayer
 from enums.sprite_type import SpriteType
 from sprites.tile import Tile
@@ -12,9 +12,9 @@ from sprites.custom_groups.camera_group import CameraGroup
 class WorldMap:
     def __init__(self):
         self.screen = pygame.display.get_surface()
-        self.ground_surface = pygame.image.load(
-            'src/assets/world_map/ground.png'
-        ).convert()
+        self.ground_surface = get_alpha_converted_surface_from_image(
+            'world_map/ground.png'
+        )
         self.ground_rect = self.ground_surface.get_rect(
             center=CAMERA_INITIAL_CENTER_POSITION
         )
@@ -53,9 +53,9 @@ class WorldMap:
 
     def add_grass(self, tile_topleft_position: tuple[int, int]):
         grass_image_index = random.randint(1, 3)
-        grass_surface = pygame.image.load(
-            f'src/assets/grass/grass_{grass_image_index}.png'
-        ).convert_alpha()
+        grass_surface = get_alpha_converted_surface_from_image(
+            f'grass/grass_{grass_image_index}.png'
+        )
         Tile(
             tile_topleft_position,
             [self.visible_sprites_group, self.collidable_sprites_group],
@@ -64,9 +64,7 @@ class WorldMap:
         )
 
     def add_objects(self, tile: str, tile_topleft_position: tuple[int, int]):
-        grass_surface = pygame.image.load(
-            f'src/assets/objects/{tile}.png'
-        ).convert_alpha()
+        grass_surface = get_alpha_converted_surface_from_image(f'objects/{tile}.png')
         Tile(
             tile_topleft_position,
             [self.visible_sprites_group, self.collidable_sprites_group],
@@ -76,11 +74,9 @@ class WorldMap:
 
     def add_sprites_to_world_map(self):
         map_layers = {
-            MapLayer.BORDER_DELIMITERS: get_map_layer_from_csv(
-                'src/data/map/border_delimiter.csv'
-            ),
-            MapLayer.GRASS: get_map_layer_from_csv('src/data/map/grass.csv'),
-            MapLayer.OBJECTS: get_map_layer_from_csv('src/data/map/object.csv'),
+            MapLayer.BORDER_DELIMITERS: get_map_layer_from_csv('border_delimiters.csv'),
+            MapLayer.GRASS: get_map_layer_from_csv('grass.csv'),
+            MapLayer.OBJECTS: get_map_layer_from_csv('objects.csv'),
         }
         for layer_type, layer in map_layers.items():
             self.process_layer(layer, layer_type)
