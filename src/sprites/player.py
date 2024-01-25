@@ -1,5 +1,6 @@
 import pygame
 from common.settings import (
+    PLAYER_ATTACK_COOLDOWN_MS,
     PLAYER_INITIAL_CENTER_POSITION,
     PLAYER_RUN_ANIMATION_SPEED,
     PLAYER_RUN_SPEED,
@@ -21,38 +22,56 @@ class Player(pygame.sprite.Sprite):
         groups: list[pygame.sprite.Group],
         collidable_sprites_group: pygame.sprite.Group,
     ):
+        self.player_animation = PlayerAnimation()
         super().__init__(groups)
-        self.image = get_alpha_converted_surface_from_image(
-            'player/down_idle/down_idle.png'
-        )
+        self.image = self.player_animation.down_idle_surface
         self.rect = self.image.get_rect(center=PLAYER_INITIAL_CENTER_POSITION)
         self.direction_vector = pygame.math.Vector2()
         self.speed = PLAYER_WALK_SPEED
         self.collidable_sprites_group = collidable_sprites_group
-        self.player_animation = PlayerAnimation()
         self.player_animation_speed = PLAYER_WALK_ANIMATION_SPEED
         self.player_direction = PlayerDirection.DOWN
+        self.last_time_player_attacked_time_ms = 0
+        self.is_attacking_cooldown_over = False
+        self.are_attack_buttons_pressed = False
 
-    def process_input(self):
-        keys = pygame.key.get_pressed()
+    def process_walk_inputs(self, keys: pygame.key.ScancodeWrapper):
         if keys[pygame.K_LSHIFT]:
             self.speed = PLAYER_RUN_SPEED
             self.player_animation_speed = PLAYER_RUN_ANIMATION_SPEED
         else:
             self.speed = PLAYER_WALK_SPEED
             self.player_animation_speed = PLAYER_WALK_ANIMATION_SPEED
-        if keys[pygame.K_d]:
+        if keys[pygame.K_d] and not self.are_attack_buttons_pressed:
             self.direction_vector.x = 1
-        elif keys[pygame.K_a]:
+        elif keys[pygame.K_a] and not self.are_attack_buttons_pressed:
             self.direction_vector.x = -1
         else:
             self.direction_vector.x = 0
-        if keys[pygame.K_s]:
+        if keys[pygame.K_s] and not self.are_attack_buttons_pressed:
             self.direction_vector.y = 1
-        elif keys[pygame.K_w]:
+        elif keys[pygame.K_w] and not self.are_attack_buttons_pressed:
             self.direction_vector.y = -1
         else:
             self.direction_vector.y = 0
+
+    def process_attack_inputs(self, keys: pygame.key.ScancodeWrapper):
+        self.is_attacking_cooldown_over = (
+            pygame.time.get_ticks() - self.last_time_player_attacked_time_ms
+            > PLAYER_ATTACK_COOLDOWN_MS
+        )
+        self.are_attack_buttons_pressed = keys[pygame.K_SPACE] or keys[pygame.K_c]
+        if keys[pygame.K_SPACE] and self.is_attacking_cooldown_over:
+            print('Attack')
+            self.last_time_player_attacked_time_ms = pygame.time.get_ticks()
+        elif keys[pygame.K_c] and self.is_attacking_cooldown_over:
+            print('Magic')
+            self.last_time_player_attacked_time_ms = pygame.time.get_ticks()
+
+    def process_input(self):
+        keys = pygame.key.get_pressed()
+        self.process_attack_inputs(keys)
+        self.process_walk_inputs(keys)
 
     def get_player_direction(self):
         if self.direction_vector.y == -1 and self.direction_vector.x == -1:
@@ -73,55 +92,79 @@ class Player(pygame.sprite.Sprite):
             self.player_direction = PlayerDirection.RIGHT
 
     def set_idle_position(self):
-        if self.direction_vector.y == 0 and self.direction_vector.x == 0:
+        if (
+            self.direction_vector.y == 0
+            and self.direction_vector.x == 0
+            and self.is_attacking_cooldown_over
+        ):
             if self.player_direction == PlayerDirection.UP:
-                self.image = self.player_animation.up_idle
+                self.image = self.player_animation.up_idle_surface
             elif self.player_direction == PlayerDirection.DOWN:
-                self.image = self.player_animation.down_idle
+                self.image = self.player_animation.down_idle_surface
             elif (
                 self.player_direction == PlayerDirection.LEFT
                 or self.player_direction == PlayerDirection.UP_PLUS_LEFT
                 or self.player_direction == PlayerDirection.DOWN_PLUS_LEFT
             ):
-                self.image = self.player_animation.left_idle
+                self.image = self.player_animation.left_idle_surface
             elif (
                 self.player_direction == PlayerDirection.RIGHT
                 or self.player_direction == PlayerDirection.UP_PLUS_RIGHT
                 or self.player_direction == PlayerDirection.DOWN_PLUS_RIGHT
             ):
-                self.image = self.player_animation.right_idle
+                self.image = self.player_animation.right_idle_surface
 
-    def animate_player(self):
-        self.player_animation.walk_index += self.player_animation_speed
-        if (
-            int(self.player_animation.walk_index)
-            >= self.player_animation.amount_of_animation_sprites
-        ):
-            self.player_animation.walk_index = 0.0
-        if self.player_direction == PlayerDirection.UP:
-            self.image = self.player_animation.walk_up_surfaces[
+    def animate_attack(self):
+        if not self.is_attacking_cooldown_over:
+            if self.player_direction == PlayerDirection.UP:
+                self.image = self.player_animation.up_attack_surface
+            elif self.player_direction == PlayerDirection.DOWN:
+                self.image = self.player_animation.down_attack_surface
+            elif (
+                self.player_direction == PlayerDirection.LEFT
+                or self.player_direction == PlayerDirection.UP_PLUS_LEFT
+                or self.player_direction == PlayerDirection.DOWN_PLUS_LEFT
+            ):
+                self.image = self.player_animation.left_attack_surface
+            elif (
+                self.player_direction == PlayerDirection.RIGHT
+                or self.player_direction == PlayerDirection.UP_PLUS_RIGHT
+                or self.player_direction == PlayerDirection.DOWN_PLUS_RIGHT
+            ):
+                self.image = self.player_animation.right_attack_surface
+
+    def animate_walk_cycle(self):
+        if self.is_attacking_cooldown_over:
+            self.player_animation.walk_index += self.player_animation_speed
+            if (
                 int(self.player_animation.walk_index)
-            ]
-        elif self.player_direction == PlayerDirection.DOWN:
-            self.image = self.player_animation.walk_down_surfaces[
-                int(self.player_animation.walk_index)
-            ]
-        elif (
-            self.player_direction == PlayerDirection.LEFT
-            or self.player_direction == PlayerDirection.UP_PLUS_LEFT
-            or self.player_direction == PlayerDirection.DOWN_PLUS_LEFT
-        ):
-            self.image = self.player_animation.walk_left_surfaces[
-                int(self.player_animation.walk_index)
-            ]
-        elif (
-            self.player_direction == PlayerDirection.RIGHT
-            or self.player_direction == PlayerDirection.UP_PLUS_RIGHT
-            or self.player_direction == PlayerDirection.DOWN_PLUS_RIGHT
-        ):
-            self.image = self.player_animation.walk_right_surfaces[
-                int(self.player_animation.walk_index)
-            ]
+                >= self.player_animation.amount_of_animation_sprites
+            ):
+                self.player_animation.walk_index = 0.0
+            if self.player_direction == PlayerDirection.UP:
+                self.image = self.player_animation.walk_up_surfaces[
+                    int(self.player_animation.walk_index)
+                ]
+            elif self.player_direction == PlayerDirection.DOWN:
+                self.image = self.player_animation.walk_down_surfaces[
+                    int(self.player_animation.walk_index)
+                ]
+            elif (
+                self.player_direction == PlayerDirection.LEFT
+                or self.player_direction == PlayerDirection.UP_PLUS_LEFT
+                or self.player_direction == PlayerDirection.DOWN_PLUS_LEFT
+            ):
+                self.image = self.player_animation.walk_left_surfaces[
+                    int(self.player_animation.walk_index)
+                ]
+            elif (
+                self.player_direction == PlayerDirection.RIGHT
+                or self.player_direction == PlayerDirection.UP_PLUS_RIGHT
+                or self.player_direction == PlayerDirection.DOWN_PLUS_RIGHT
+            ):
+                self.image = self.player_animation.walk_right_surfaces[
+                    int(self.player_animation.walk_index)
+                ]
 
     def move(self):
         if self.direction_vector.magnitude() > 0:
@@ -172,5 +215,6 @@ class Player(pygame.sprite.Sprite):
         self.process_input()
         self.get_player_direction()
         self.move()
-        self.animate_player()
+        self.animate_attack()
+        self.animate_walk_cycle()
         self.set_idle_position()
