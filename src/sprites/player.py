@@ -8,7 +8,6 @@ from common.settings import (
     PLAYER_WALK_SPEED,
     TILE_SIZE,
 )
-from common.utils import get_alpha_converted_surface_from_image
 from enums.collision_direction import CollisionDirection
 from enums.player_direction import PlayerDirection
 from enums.sprite_type import SpriteType
@@ -42,36 +41,44 @@ class Player(pygame.sprite.Sprite):
         else:
             self.speed = PLAYER_WALK_SPEED
             self.player_animation_speed = PLAYER_WALK_ANIMATION_SPEED
-        if keys[pygame.K_d] and not self.are_attack_buttons_pressed:
+        if keys[pygame.K_d]:
             self.direction_vector.x = 1
-        elif keys[pygame.K_a] and not self.are_attack_buttons_pressed:
+        elif keys[pygame.K_a]:
             self.direction_vector.x = -1
         else:
             self.direction_vector.x = 0
-        if keys[pygame.K_s] and not self.are_attack_buttons_pressed:
+        if keys[pygame.K_s]:
             self.direction_vector.y = 1
-        elif keys[pygame.K_w] and not self.are_attack_buttons_pressed:
+        elif keys[pygame.K_w]:
             self.direction_vector.y = -1
         else:
             self.direction_vector.y = 0
 
     def process_attack_inputs(self, keys: pygame.key.ScancodeWrapper):
+        if keys[pygame.K_SPACE] and self.is_attacking_cooldown_over:
+            print('Attack')
+            self.direction_vector.x = 0
+            self.direction_vector.y = 0
+            self.last_time_player_attacked_time_ms = pygame.time.get_ticks()
+        elif keys[pygame.K_c] and self.is_attacking_cooldown_over:
+            print('Magic')
+            self.last_time_player_attacked_time_ms = pygame.time.get_ticks()
+            self.direction_vector.x = 0
+            self.direction_vector.y = 0
+
+    def process_inputs(self):
+        keys = pygame.key.get_pressed()
         self.is_attacking_cooldown_over = (
             pygame.time.get_ticks() - self.last_time_player_attacked_time_ms
             > PLAYER_ATTACK_COOLDOWN_MS
         )
         self.are_attack_buttons_pressed = keys[pygame.K_SPACE] or keys[pygame.K_c]
-        if keys[pygame.K_SPACE] and self.is_attacking_cooldown_over:
-            print('Attack')
-            self.last_time_player_attacked_time_ms = pygame.time.get_ticks()
-        elif keys[pygame.K_c] and self.is_attacking_cooldown_over:
-            print('Magic')
-            self.last_time_player_attacked_time_ms = pygame.time.get_ticks()
-
-    def process_input(self):
-        keys = pygame.key.get_pressed()
-        self.process_attack_inputs(keys)
-        self.process_walk_inputs(keys)
+        if not self.are_attack_buttons_pressed and self.is_attacking_cooldown_over:
+            self.process_walk_inputs(keys)
+            self.animate_walk_cycle()
+        if self.are_attack_buttons_pressed:
+            self.process_attack_inputs(keys)
+            self.animate_attack()
 
     def get_player_direction(self):
         if self.direction_vector.y == -1 and self.direction_vector.x == -1:
@@ -115,23 +122,22 @@ class Player(pygame.sprite.Sprite):
                 self.image = self.player_animation.right_idle_surface
 
     def animate_attack(self):
-        if not self.is_attacking_cooldown_over:
-            if self.player_direction == PlayerDirection.UP:
-                self.image = self.player_animation.up_attack_surface
-            elif self.player_direction == PlayerDirection.DOWN:
-                self.image = self.player_animation.down_attack_surface
-            elif (
-                self.player_direction == PlayerDirection.LEFT
-                or self.player_direction == PlayerDirection.UP_PLUS_LEFT
-                or self.player_direction == PlayerDirection.DOWN_PLUS_LEFT
-            ):
-                self.image = self.player_animation.left_attack_surface
-            elif (
-                self.player_direction == PlayerDirection.RIGHT
-                or self.player_direction == PlayerDirection.UP_PLUS_RIGHT
-                or self.player_direction == PlayerDirection.DOWN_PLUS_RIGHT
-            ):
-                self.image = self.player_animation.right_attack_surface
+        if self.player_direction == PlayerDirection.UP:
+            self.image = self.player_animation.up_attack_surface
+        elif self.player_direction == PlayerDirection.DOWN:
+            self.image = self.player_animation.down_attack_surface
+        elif (
+            self.player_direction == PlayerDirection.LEFT
+            or self.player_direction == PlayerDirection.UP_PLUS_LEFT
+            or self.player_direction == PlayerDirection.DOWN_PLUS_LEFT
+        ):
+            self.image = self.player_animation.left_attack_surface
+        elif (
+            self.player_direction == PlayerDirection.RIGHT
+            or self.player_direction == PlayerDirection.UP_PLUS_RIGHT
+            or self.player_direction == PlayerDirection.DOWN_PLUS_RIGHT
+        ):
+            self.image = self.player_animation.right_attack_surface
 
     def animate_walk_cycle(self):
         if self.is_attacking_cooldown_over:
@@ -212,9 +218,7 @@ class Player(pygame.sprite.Sprite):
             self.calculate_player_hitbox_size(collidable_sprite)
 
     def update(self):
-        self.process_input()
+        self.process_inputs()
         self.get_player_direction()
         self.move()
-        self.animate_attack()
-        self.animate_walk_cycle()
         self.set_idle_position()
